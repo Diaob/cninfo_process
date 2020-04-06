@@ -1,4 +1,4 @@
-## 巨潮资讯网 PDF爬虫
+## Cninfo PDF Spider
 
 Special Thanks & Fork From: https://github.com/gaodechen/cninfo_process
 
@@ -36,7 +36,7 @@ Next, edit your keywords and blacklist in `spider.py` , `pdf2xls.py` and `fix.py
 
 Lastly, don't forget to modify date properly in `spider.py`
 
-##Usage
+## Usage
 
 ```
 python spider.py        # put PDF files in /pdf directory, modify spider.py as u need
@@ -44,7 +44,7 @@ python fix.py           # fix PDF files
 python pdfxls.py       	# then covert all /pdf into /txt and collect them into result.xlsx
 ```
 
-##Improvements
+## Improvements
 (Compared with this fantastic project made by Gaodechen)
 1. More pages are supported when `requests.post()` , no further PDFs will be omitted.
 2. `fix.py` was used to check PDFs if they are damaged or blocked by anti-spider mechanism.
@@ -52,12 +52,12 @@ python pdfxls.py       	# then covert all /pdf into /txt and collect them into r
 3. blacklist added and less post actions by judging code is from Shanghai or Shenzhen  
 
 
-##For Windows User
+## For Windows Users
 1. change `mv` in `fix.py` and `pdf2xls.py` into `move`
 2. change `cp` in `pdf2xls.py` into `copy`
 
 
-Following information was provided by Gaodechen
+**Following information was provided by Gaodechen**
 
 ## Remark
 
