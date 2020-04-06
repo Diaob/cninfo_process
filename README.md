@@ -1,26 +1,63 @@
-## 巨潮资讯网 PDF爬虫 & PDF解析
+## 巨潮资讯网 PDF爬虫
 
-1. 爬虫爬取下载巨潮资讯网指定公司的年报PDF，以及招股意向（说明）文件PDF
-2. 解析PDF中的文字和图片，获取keywords列表中指定关键字的出现频数
+Special Thanks & Fork From: https://github.com/gaodechen/cninfo_process
+
+These tools are designed to collect reports with specific keywords and convert pdfs into text
 
 ## Structure
 
-    spider.py           爬虫
-    pdf2txt.py          爬虫所得PDF批量转txt
-    main.py             统计keywords列表中每个关键字频数
-    extract_text.js     指定PDF转txt
-    keywords.txt        需要统计的关键字列表
-    company_id.txt      需要爬取PDF的公司stock代码列表
+    spider.py           cninfo web spider
+    pdf2xls.py          convert pdfs into text
+    fix.py              redowndload pdfs when web spider was banned by anti-spider mechanism or others
+    extract_text.js     required file
+    company_id.txt      all listed companies code
+    result.xlsx         xlsx to store all data
 
-## Usage
+## Prepare
+```
+Note:
+I strongly recommend using WSL(Windows subsystem For Linux) or Linux, they can save your time greatly.
+If you have no Linux experience, some codes need edited before running this program on Windows. 
+```
 
-First, set `keywords.txt` and `company_id.txt` if u need more keywords for statistic or more company to crawl on cninfo.
+First, set up environment. Using pip to install plugs, especially `openpyxl` , to make sure your environment meets the needs.
+
+When comes to node `pdf-text-extract`, following commands are required (WSL/Linux only):
+```
+sudo apt-get node
+sudo apt-get install poppler-utils
+sudo apt-get install ghostscript
+sudo apt-get install tesseract-ocr
+sudo npm install pdf-text-extract --registry https://registry.npm.taobao.org
+```
+IF YOU ARE RUNNING ON WINDOWS, please refer to Baidu or Google.
+
+Next, edit your keywords and blacklist in `spider.py` , `pdf2xls.py` and `fix.py`
+
+Lastly, don't forget to modify date properly in `spider.py`
+
+##Usage
 
 ```
 python spider.py        # put PDF files in /pdf directory, modify spider.py as u need
-python pdf2txt.py       # then covert all /pdf into /txt
-python main.py          # make statistics
+python fix.py           # fix PDF files
+python pdfxls.py       	# then covert all /pdf into /txt and collect them into result.xlsx
 ```
+
+##Improvements
+(Compared with this fantastic project made by Gaodechen)
+1. More pages are supported when `requests.post()` , no further PDFs will be omitted.
+2. `fix.py` was used to check PDFs if they are damaged or blocked by anti-spider mechanism.
+(And I recommend using `seleium` for better experience)
+3. blacklist added and less post actions by judging code is from Shanghai or Shenzhen  
+
+
+##For Windows User
+1. change `mv` in `fix.py` and `pdf2xls.py` into `move`
+2. change `cp` in `pdf2xls.py` into `copy`
+
+
+Following information was provided by Gaodechen
 
 ## Remark
 

@@ -1,15 +1,41 @@
-"""
-    downloads:
-    公开招股书（招股说明书/招股意向书）
-    《年度报告》 16 17 18
-"""
+# coding=utf-8
+#
+# Author: ECNU 虾饺同学
+#
+
 import requests
+import os
 import random
-import time
 import urllib
+import time
+import sys
+
+#关键词
+keyword = "你的关键词"
+
+#白名单和黑名单（请一定参照格式）
+allowed_list = [
+]
+
+block_list = [
+        '子公司',
+        '控股',
+        '到期',
+        '关联交易',
+        '收回',
+        '归还',
+        '下属公司',
+        '参股公司'
+]
+
+# 时间区间（请一定参照格式）
+rangetime = '2001-01-01+~+2020-04-03'
+
+#若不熟悉Pyhon，以下内容请勿更改==========================================================================
 
 download_path = 'http://static.cninfo.com.cn/'
 saving_path = './pdf/'
+shcount = 0    #计数，若发现是上海证券交易所的股票超过5次，直接调用上交所而不是深交所数据
 
 User_Agent = [
     "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Win64; x64; Trident/5.0; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET CLR 2.0.50727; Media Center PC 6.0)",
@@ -33,95 +59,70 @@ headers = {'Accept': 'application/json, text/javascript, */*; q=0.01',
            }
 
 
-
-
-# 深市 年度报告
-def szseAnnual(page, stock):
+def search(stock):
     query_path = 'http://www.cninfo.com.cn/new/hisAnnouncement/query'
-    headers['User-Agent'] = random.choice(User_Agent)  # 定义User_Agent
-    query = {'pageNum': page,  # 页码
-             'pageSize': 30,
-             'tabName': 'fulltext',
-             'column': 'szse',  # 深交所
-             'stock': stock,
-             'searchkey': '',
-             'secid': '',
-             'plate': 'sz',
-             'category': 'category_ndbg_szsh;',  # 年度报告
-             'trade': '',
-             'seDate': '2016-01-01+~+2019-4-26'  # 时间区间
-             }
+    headers['User-Agent'] = random.choice(User_Agent)
+    
+    global shcount
+    if shcount < 6:
+                query = {'pageNum': 1,
+                         'pageSize': 30,
+                         'tabName': 'fulltext',
+                         'column': 'szse',
+                         'stock': stock,
+                         'searchkey': keyword,
+                         'secid': '',
+                         'plate': 'sz',
+                         'category': '',
+                         'trade': '',
+                         'seDate': rangetime
+                         }
+    else:
+                 query = {'pageNum': 1,
+                         'pageSize': 30,
+                         'tabName': 'fulltext',
+                         'column': 'sse',
+                         'stock': stock,
+                         'searchkey': keyword,
+                         'secid': '',
+                         'plate': 'sh',
+                         'category': '',
+                         'trade': '',
+                         'seDate': rangetime
+                         }
+                
+    for page in range(1,100):
+        try:
+            query["pageNum"] = page
 
-    namelist = requests.post(query_path, headers=headers, data=query)
-    return namelist.json()['announcements']
+            try:
+                namelist = requests.post(query_path, headers=headers, data=query)
+                report_inform = namelist.json()['announcements']
+            except:
+                print(stock + ' error')
+                
+            if len(report_inform) == 0:
+                query["column"] = 'sse'
+                query["plate"] = 'sh'
+                try:
+                    namelist = requests.post(query_path, headers=headers, data=query)
+                    report_inform = namelist.json()['announcements']
+                    if len(report_inform) != 0:
+                        shcount += 1
+                except:
+                    print(stock + ' error')
 
-
-# 沪市 年度报告
-def sseAnnual(page, stock):
-    query_path = 'http://www.cninfo.com.cn/new/hisAnnouncement/query'
-    headers['User-Agent'] = random.choice(User_Agent)  # 定义User_Agent
-    query = {'pageNum': page,  # 页码
-             'pageSize': 30,
-             'tabName': 'fulltext',
-             'column': 'sse',
-             'stock': stock,
-             'searchkey': '',
-             'secid': '',
-             'plate': 'sh',
-             'category': 'category_ndbg_szsh;',  # 年度报告
-             'trade': '',
-             'seDate': '2016-01-01+~+2019-4-26'  # 时间区间
-             }
-
-    namelist = requests.post(query_path, headers=headers, data=query)
-    return namelist.json()['announcements']  # json中的年度报告信息
-
-
-# 深市 招股
-def szseStock(page, stock):
-    query_path = 'http://www.cninfo.com.cn/new/hisAnnouncement/query'
-    headers['User-Agent'] = random.choice(User_Agent)  # 定义User_Agent
-    query = {'pageNum': page,  # 页码
-             'pageSize': 30,
-             'tabName': 'fulltext',
-             'column': 'szse',
-             'stock': stock,
-             'searchkey': '招股',
-             'secid': '',
-             'plate': 'sz',
-             'category': '',
-             'trade': '',
-             'seDate': '2001-01-01+~+2019-4-26'  # 时间区间
-             }
-
-    namelist = requests.post(query_path, headers=headers, data=query)
-    return namelist.json()['announcements']  # json中的年度报告信息
-
-
-# 沪市 招股
-def sseStock(page, stock):
-    query_path = 'http://www.cninfo.com.cn/new/hisAnnouncement/query'
-    headers['User-Agent'] = random.choice(User_Agent)  # 定义User_Agent
-    query = {'pageNum': page,  # 页码
-             'pageSize': 30,
-             'tabName': 'fulltext',
-             'column': 'sse',
-             'stock': stock,
-             'searchkey': '招股',
-             'secid': '',
-             'plate': 'sh',
-             'category': '',
-             'trade': '',
-             'seDate': '2001-01-01+~+2019-4-26'  # 时间区间
-             }
-
-    namelist = requests.post(query_path, headers=headers, data=query)
-    return namelist.json()['announcements']  # json中的年度报告信息
+            if len(report_inform) == 0:
+                break
+                    
+            Download(report_inform)
+        except:
+            return
+        
 
 
-# download PDF
-def Download(single_page):
-    if single_page is None:
+def Download(req):
+    if req is None:
         return
 
     headers = {'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -131,69 +132,63 @@ def Download(single_page):
                'Host': 'www.cninfo.com.cn',
                'Origin': 'http://www.cninfo.com.cn'
                }
-
-    for i in single_page:
-        allowed_list = [
-            '2018年年度报告（更新后）',
-            '2018年年度报告',
-            '2017年年度报告（更新后）',
-            '2017年年度报告',
-            '2016年年度报告（更新后）',
-            '2016年年度报告',
-        ]
-        allowed_list_2 = [
-            '招股书',
-            '招股说明书',
-            '招股意向书',
-        ]
+    
+    for i in req:
         title = i['announcementTitle']
-        allowed = title in allowed_list
-        if '确认意见' in title:
-            return
-        for item in allowed_list_2:
-            if item in title:
-                allowed = True
-                break
-        if allowed:
-            download = download_path + i["adjunctUrl"]
-            name = i["secCode"] + '_' + i['secName'] + '_' + i['announcementTitle'] + '.pdf'
-            if '*' in name:
-                name = name.replace('*', '')
-            file_path = saving_path + name
-            time.sleep(random.random() * 2)
+        allowed = True
 
+        if len(allowed_list) != 0:
+            allowed = title in allowed_list
+
+        if len(block_list) != 0:
+            for item in block_list:
+                if item in title:
+                    allowed = False
+                    break
+                
+        if allowed == False:
+            continue
+        
+        download = download_path + i["adjunctUrl"]
+        tmp = str(i['announcementTime'])
+        report_time = time.localtime(int(tmp[0:10]))
+        announce_time = time.strftime("%y-%m-%d", report_time)
+        name = i["secCode"] + '_' + announce_time + '_' + i['secName'] + '_' + i['announcementTitle'] + '.pdf'
+        if '*' in name:
+            name = name.replace('*', '')
+
+        if ' ' in name:
+            name = name.replace(' ','')
+
+        file_path = saving_path + name
+        time.sleep(random.random() * 2)
+
+        isExist = os.path.exists(file_path)
+        if isExist == False:
             headers['User-Agent'] = random.choice(User_Agent)
             r = requests.get(download)
-
-            f = open(file_path, "wb")
-            f.write(r.content)
-            f.close()
         else:
-            continue
+            size = os.path.getsize(file_path)
+            if size < 15000:
+                headers['User-Agent'] = random.choice(User_Agent)
+                r = requests.get(download) 
 
 
-# given page_number & stock number
-def Run(page_number, stock):
-    try:
-        annual_report = szseAnnual(page_number, stock)
-        stock_report = szseStock(page_number, stock)
-        annual_report_ = sseAnnual(page_number, stock)
-        stock_report_ = sseStock(page_number, stock)
-    except:
-        print(page_number, 'page error, retrying')
-        try:
-            annual_report = szseAnnual(page_number, stock)
-        except:
-            print(page_number, 'page error')
-    Download(annual_report)
-    Download(stock_report)
-    Download(annual_report_)
-    Download(stock_report_)
+        f = open(file_path, "wb")
+        f.write(r.content)
+        f.close()
+
+def main(argv):
+    with open('company_id.txt') as file:
+        lines = file.readlines()
+        count = 1
+        TotalCount = len(lines)
+        for line in lines:
+            search(line)
+            print(str(line[:6]), end="")
+            print(" " + str(count) + "/" + str(TotalCount) + " finished")
+            count += 1
 
 
-with open('company_id.txt') as file:
-    lines = file.readlines()
-    for line in lines:
-        stock = line
-        Run(1, line)
-        print(line, "done")
+if __name__ == "__main__":
+    main(sys.argv)
