@@ -20,7 +20,7 @@ I strongly recommend using WSL(Windows subsystem For Linux) or Linux, they can s
 If you have no Linux experience, some codes need edited before running this program on Windows. 
 ```
 
-First, set up environment. Using pip to install plugs, especially `openpyxl` , to make sure your environment meets the needs.
+First, set up environment. Create folders `pdf` and `txt`. Then use pip to install plugs, especially `openpyxl` , to make sure your environment meets the needs.
 
 When comes to node `pdf-text-extract`, following commands are required (WSL/Linux only):
 ```
