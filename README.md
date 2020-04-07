@@ -41,7 +41,7 @@ Lastly, don't forget to modify date properly in `spider.py`
 ```
 python spider.py        # put PDF files in /pdf directory, modify spider.py as u need
 python fix.py           # fix PDF files
-python pdfxls.py       	# then covert all /pdf into /txt and collect them into result.xlsx
+python pdf2xls.py       	# then covert all /pdf into /txt and collect them into result.xlsx
 ```
 
 ## Improvements
